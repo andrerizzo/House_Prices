@@ -1,0 +1,196 @@
+---
+title: "House Prices - Kaggle"
+url: "https://www.kaggle.com/c/house-prices-advanced-regression-techniques"
+author: "André Rizzo"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+    highlight: tango
+
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+
+
+### Check if libraries are installed
+```{r}
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("here")) install.packages("here")
+if (!require("RizzoEDA")) install.packages("RizzoEDA")
+if (!require("dataMaid")) install.packages("dataMaid")
+if (!require("DataExplorer")) install.packages("DataExplorer")
+if (!require("corrplot")) install.packages("corrplot")
+if (!require("skimr")) install.packages("skimr")
+
+```
+
+
+### Load libraries
+```{r}
+library(tidyverse)
+library(here)
+library(RizzoEDA)
+library(dataMaid)
+library(DataExplorer)
+library(corrplot)
+library(skimr)
+
+```
+
+
+### Load data
+```{r}
+path = here("data/raw/train.csv")
+df_train = read_csv(path)
+```
+
+
+### Data Exploration
+
+
+#### Check the dimensions of the data
+```{r}
+
+dim(df_train)
+```
+
+
+#### Check the first rows of the data
+```{r}
+head(df_train)
+```
+
+
+#### Check the last rows of the data
+```{r}
+tail(df_train)
+```
+
+
+#### Check the structure of the data
+```{r}
+df_train %>% 
+  glimpse()
+
+```
+
+#### Identify numeric features names
+```{r}
+numeric_features_names = df_train %>% 
+  select_if(is.numeric) %>%
+  colnames()
+
+numeric_features_names
+```
+
+
+#### Identify numeric features
+```{r}
+numeric_features = df_train %>% 
+  select_if(is.numeric)
+
+numeric_features
+```
+
+#### Identify categorical features names
+```{r}
+cat_features_names = df_train %>% 
+  select_if(is.character) %>%
+  colnames()
+
+cat_features_names
+```
+
+
+#### Identify categorical features
+```{r}
+cat_features = df_train %>% 
+  select_if(is.character)
+
+cat_features
+```
+
+
+
+#### Check the summary of the data
+```{r}
+skim(df_train)
+```
+
+#### Check the missing values - Numeric Features
+```{r}
+numeric_features %>%
+  plot_missing(ggtheme = theme_classic(), title = "Missing Values - Numeric Features")
+
+```
+
+
+#### Check the missing values - Categorical Features
+```{r}
+cat_features %>%
+  plot_missing(ggtheme = theme_classic(), title = "Missing Values - Categorical Features")
+
+```
+
+#### Check categorical features
+```{r}
+df_train %>%
+  plot_bar(ggtheme = theme_light(), title = "Categorical Data")
+```
+
+### Check numerical features
+
+#### Check the distribution of the numerical features
+```{r}
+df_train %>%
+  plot_histogram(ggtheme = theme_light(), title = "Numerical Data", nrow = 3, ncol = 3)
+```
+
+#### Density plot
+```{r}
+df_train %>%
+  plot_density(ggtheme = theme_light(), title = "Density Plot", nrow = 3, ncol = 3)
+```
+
+#### qqplot
+```{r}
+df_train %>%
+  plot_qq(ggtheme = theme_light(), title = "qqplot", nrow = 3, ncol = 3)
+```
+
+### Correlogram
+```{r}
+numeric_features %>%
+  plot_correlation(ggtheme = theme_light(), title = "Correlogram")
+
+```
+
+
+### Check the correlation of the numeric features
+```{r}
+cor_matrix = cor(numeric_features, method = "spearman", use = "pairwise.complete.obs")
+
+```
+
+### Show what correlation coefficients are considered strong
+```{r}
+corrplot(cor_matrix, method = "circle", type = "full", tl.col = "black", tl.srt = 45, tl.cex = 0.5)
+```
+
+
+# Calculate the VIF
+```{r}
+vif = vif(numeric_features)
+vif = vif[order(vif, decreasing = TRUE)]
+vif
+```
+
